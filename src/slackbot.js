@@ -7,9 +7,27 @@ class SlackBot {
         this.channel = channel
     }
 
-    alert(message) {
+    formatMessages(messages) {
+        let formatted = ''
+        messages.forEach((message) => {
+            formatted += '```' + message + '``` '
+        })
+        return formatted
+    }
+
+    alert(messages) {
+        const alert = '*Alert:* ' + this.formatMessages(messages)
         try {
-            this.client.chat.postMessage({channel: this.channel, text: message})
+            this.client.chat.postMessage({channel: this.channel, text: alert})
+        } catch (err) {
+            console.error('Failed to send alert to channel', this.channel)
+        }
+    }
+
+    notify(messages) {
+        const notification = '*Notification:* ' + this.formatMessages(messages)
+        try {
+            this.client.chat.postMessage({channel: this.channel, text: notification})
         } catch (err) {
             console.error('Failed to send alert to channel', this.channel)
         }

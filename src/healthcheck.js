@@ -14,21 +14,38 @@ const urls = [
     'https://corea2.streamr.network:8004'
 ]
 
-const query = '/api/v1/streams/7wa7APtlTq6EC5iTCBy6dw/data/partitions/0/last'
+const resendEndpoint = '/api/v1/streams/7wa7APtlTq6EC5iTCBy6dw/data/partitions/0/last'
 
-slackbot.alert('Resend healthcheck started')
-setInterval(() => {
-    urls.forEach(async (broker) => {
-        try {
-            const res = await axios.get(broker + query)
-            if (res.status !== 200 || res.data.length === 0) {
-                const error = `Query to ${broker} failed with status ${res.status}`
-                console.log(error)
-                slackbot.alert(error)
-            }
-        } catch (err) {
-            console.log(err)
-            slackbot.alert(err)
+function parseResponseForFailures(res) {
+    if (res.status === 'rejected') {
+        return `Query to ${res.reason.config.url} failed, unable to access endpoint or request timed out after 5000ms`
+    } else if (res.value.status !== 200 || res.value.data.length === 0) {
+        return `Query to ${res.value.config.url} failed with status ${res.value.status}`
+    }
+    return null
+}
+
+
+setInterval(async () => {
+    const requestPromises = urls.map(async (broker) => {
+        return await axios.get(broker + resendEndpoint, { timeout: 5000 })
+    })
+
+    const responses = await Promise.allSettled(requestPromises)
+
+    const failedQueryAlerts = []
+    responses.forEach((res) => {
+        const parsed = parseResponseForFailures(res)
+        if (parsed) {
+            failedQueryAlerts.push(parsed)
         }
     })
-}, 60 * 1000)
+    if (failedQueryAlerts.length > 0) {
+        slackbot.alert(failedQueryAlerts)
+        console.log(failedQueryAlerts)
+    }
+
+}, 60000)
+
+slackbot.notify(['Resend healthcheck started'])
+console.log('Resend healthcheck started')
