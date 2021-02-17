@@ -17,7 +17,7 @@ program
         'https://corea2.streamr.network:8001',
         'https://corea2.streamr.network:8002',
         'https://corea2.streamr.network:8003',
-        'https://corea2.streamr.network:800'
+        'https://corea2.streamr.network:8004'
     ])
     .option('--apiEndpoint <apiEndpoint>', 'endpoint for API', '/api/v1/streams/7wa7APtlTq6EC5iTCBy6dw/data/partitions/0/last')
     .description('Run run resend health check')
