@@ -9,7 +9,7 @@ program
     .option('--queryTimeout <queryTimeout>', 'timeout for queries in milliseconds', '10000')
     .option('--queryInterval <queryInterval>', 'interval for queries in milliseconds', '60000')
     .option('--slackChannel <slackChannel>', 'Slack channel for notifications', 'UHD7R1QES')
-    .option('--urls <urls>', 'URLs to query', (value) => value.split(','), [
+    .option('--urls <urls>', 'URLs to query as a string split with ,', (value) => value.split(','), [
         'https://corea1.streamr.network:8001',
         'https://corea1.streamr.network:8002',
         'https://corea1.streamr.network:8003',
@@ -45,7 +45,6 @@ setInterval(async () => {
         return await axios.get(broker + apiEndpoint, { timeout: queryTimeout })
     })
     const responses = await Promise.allSettled(requestPromises)
-    console.log()
     const failedQueryAlerts = []
     responses.forEach((res) => {
         const parsed = parseResponseForFailures(res)
