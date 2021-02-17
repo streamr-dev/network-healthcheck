@@ -10,7 +10,7 @@ class SlackBot {
     formatMessages(messages) {
         let formatted = ''
         messages.forEach((message) => {
-            formatted += '```' + message + '``` '
+            formatted += '```' + this.dateTimeNow() + message + '``` '
         })
         return formatted
     }
@@ -31,6 +31,11 @@ class SlackBot {
         } catch (err) {
             console.error('Failed to send alert to channel', this.channel)
         }
+    }
+
+    dateTimeNow() {
+        const date = new Date()
+        return date.getFullYear() + "-" + ("0" + (date.getMonth() + 1)).slice(-2) + "-" + ("0" + date.getDate()).slice(-2) + "T" + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() + " | "
     }
 }
  module.exports = { SlackBot }
