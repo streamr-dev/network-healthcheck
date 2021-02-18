@@ -8,7 +8,7 @@ program
     .version(CURRENT_VERSION)
     .option('--queryTimeout <queryTimeout>', 'timeout for queries in milliseconds', '10000')
     .option('--queryInterval <queryInterval>', 'interval for queries in milliseconds', '60000')
-    .option('--slackChannel <slackChannel>', 'Slack channel for notifications', 'UHD7R1QES')
+    .option('--slackChannel <slackChannel>', 'Slack channel for notifications', '#network-log')
     .option('--urls <urls>', 'URLs to query as a string split with ,', (value) => value.split(','), [
         'https://corea1.streamr.network:8001',
         'https://corea1.streamr.network:8002',
@@ -29,16 +29,30 @@ const queryTimeout = parseInt(program.opts().queryTimeout, 10)
 const queryInterval = parseInt(program.opts().queryInterval, 10)
 const { slackChannel } = program.opts()
 const slackbot = new SlackBot(slackChannel)
+const previouslyFailed = {}
+
 
 function parseResponseForFailures(res) {
     if (res.status === 'rejected') {
-        return `Query to ${res.reason.config.url} failed, request timed out after ${queryTimeout}ms`
+        return {
+            error: `Query to ${res.reason.config.url} failed, request timed out after ${queryTimeout}ms`,
+            url: res.reason.config.url
+        }
     } else if (res.value.status !== 200 || res.value.data.length === 0) {
-        return `Query to ${res.value.config.url} failed with status ${res.value.status}`
+        return {
+            error: `Query to ${res.value.config.url} failed, request timed out after ${queryTimeout}ms`,
+            url: res.value.config.url
+        }
     }
-    return null
+     return {
+        error: null,
+        url: res.value.config.url
+    }
 }
 
+function checkPreviouslyFailed(url) {
+    return url in previouslyFailed
+}
 
 setInterval(async () => {
     const requestPromises = urls.map(async (broker) => {
@@ -46,10 +60,19 @@ setInterval(async () => {
     })
     const responses = await Promise.allSettled(requestPromises)
     const failedQueryAlerts = []
+    const backUp = []
     responses.forEach((res) => {
-        const parsed = parseResponseForFailures(res)
-        if (parsed) {
-            failedQueryAlerts.push(parsed)
+        const { url, error } = parseResponseForFailures(res)
+        if (error) {
+            if (!checkPreviouslyFailed(url)) {
+                failedQueryAlerts.push(error)
+                previouslyFailed[url] = error
+            }
+        } else {
+            if (checkPreviouslyFailed(url)) {
+                delete previouslyFailed[url]
+                backUp.push(`${url} back up`)
+            }
         }
     })
     if (failedQueryAlerts.length > 0) {
@@ -57,6 +80,10 @@ setInterval(async () => {
         console.log(failedQueryAlerts)
     } else {
         console.log('Health check successful')
+    }
+    if (backUp.length > 0) {
+        slackbot.notify(backUp)
+        console.log(backUp)
     }
 
 }, queryInterval)
