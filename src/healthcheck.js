@@ -31,7 +31,6 @@ const { slackChannel } = program.opts()
 const slackbot = new SlackBot(slackChannel)
 const previouslyFailed = {}
 
-
 function parseResponseForFailures(res) {
     if (res.status === 'rejected') {
         return {
@@ -78,7 +77,7 @@ setInterval(async () => {
     if (failedQueryAlerts.length > 0) {
         slackbot.alert(failedQueryAlerts)
         console.log(failedQueryAlerts)
-    } else {
+    } else if (Object.keys(previouslyFailed).length === 0) {
         console.log('Health check successful')
     }
     if (backUp.length > 0) {
