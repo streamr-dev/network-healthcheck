@@ -2,8 +2,8 @@ const { WebClient } = require('@slack/web-api')
 require('dotenv').config()
 
 class SlackBot {
-    constructor(channel) {
-        this.client =  new WebClient(process.env.SLACK_BOT_TOKEN)
+    constructor(channel, token) {
+        this.client = new WebClient(token)
         this.channel = channel
     }
 

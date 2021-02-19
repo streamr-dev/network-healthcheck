@@ -20,15 +20,22 @@ program
         'https://corea2.streamr.network:8004'
     ])
     .option('--apiEndpoint <apiEndpoint>', 'endpoint for API', '/api/v1/streams/7wa7APtlTq6EC5iTCBy6dw/data/partitions/0/last')
+    .option('--slackBotToken <slackBotToken>', 'OAuth token for slack app', '')
     .description('Run run resend health check')
     .parse(process.argv)
 
+if (!program.opts().slackBotToken) {
+    console.error('--slackBotToken must be specified')
+    process.exit(1)
+}
+
+const { slackBotToken } = program.opts()
 const { apiEndpoint } = program.opts()
 const { urls } = program.opts()
 const queryTimeout = parseInt(program.opts().queryTimeout, 10)
 const queryInterval = parseInt(program.opts().queryInterval, 10)
 const { slackChannel } = program.opts()
-const slackbot = new SlackBot(slackChannel)
+const slackbot = new SlackBot(slackChannel, slackBotToken)
 const previouslyFailed = {}
 
 function parseResponseForFailures(res) {

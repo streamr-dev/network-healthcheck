@@ -23,16 +23,24 @@ program
         'wss://corea2.streamr.network:7004'
     ])
     .option('--wsEndpoint <wsEndpoint>', 'broker WS endpoint', '/api/v1/ws')
+    .option('--slackBotToken <slackBotToken>', 'OAuth token for slack app', '')
     .description('Run run resend health check')
     .parse(process.argv)
 
+
+if (!program.opts().slackBotToken) {
+    console.error('--slackBotToken must be specified')
+    process.exit(1)
+}
+
+const { slackBotToken } = program.opts()
 const { wsEndpoint } = program.opts()
 const { urls } = program.opts()
 const { streamId } = program.opts()
 const subscribeWait = parseInt(program.opts().subscribeWait, 10)
 const publishInterval = parseInt(program.opts().publishInterval, 10)
 const { slackChannel } = program.opts()
-const slackbot = new SlackBot(slackChannel)
+const slackbot = new SlackBot(slackChannel, slackBotToken)
 const EthKey = process.env.ETHEREUM_PRIVATE_KEY || StreamrClient.generateEthereumAccount().privateKey
 
 async function run() {
