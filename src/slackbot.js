@@ -15,8 +15,8 @@ class SlackBot {
         return formatted
     }
 
-    alert(messages) {
-        const alert = '*Alert:* ' + this.formatMessages(messages)
+    alert(messages, header='') {
+        const alert = `*${header} Alert:* ` + this.formatMessages(messages)
         try {
             this.client.chat.postMessage({channel: this.channel, text: alert})
         } catch (err) {
@@ -24,8 +24,8 @@ class SlackBot {
         }
     }
 
-    notify(messages) {
-        const notification = '*Notification:* ' + this.formatMessages(messages)
+    notify(messages, header= '') {
+        const notification = `*${header} Notification:* ` + this.formatMessages(messages)
         try {
             this.client.chat.postMessage({channel: this.channel, text: notification})
         } catch (err) {

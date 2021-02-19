@@ -75,7 +75,7 @@ setInterval(async () => {
         }
     })
     if (failedQueryAlerts.length > 0) {
-        slackbot.alert(failedQueryAlerts)
+        slackbot.alert(failedQueryAlerts, 'Resend')
         console.log(failedQueryAlerts)
     } else if (Object.keys(previouslyFailed).length === 0) {
         console.log('Health check successful')
@@ -87,5 +87,5 @@ setInterval(async () => {
 
 }, queryInterval)
 
-slackbot.notify([`Resend healthcheck started with query interval ${queryInterval / 1000} seconds, query timeout ${queryTimeout / 1000} seconds`])
+slackbot.notify([`Resend healthcheck started with query interval ${queryInterval / 1000} seconds, query timeout ${queryTimeout / 1000} seconds`], 'Resend')
 console.log('Resend healthcheck started')
