@@ -81,7 +81,7 @@ setInterval(async () => {
         console.log('Health check successful')
     }
     if (backUp.length > 0) {
-        slackbot.notify(backUp)
+        slackbot.notify(backUp, 'Resend')
         console.log(backUp)
     }
 
