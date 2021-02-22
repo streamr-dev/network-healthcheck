@@ -102,7 +102,7 @@ async function run() {
             } else if (Object.keys(previouslyFailed).length === 0) {
                 console.log('All healthchecks successful')
             }
-            if (recovered > 0) {
+            if (recovered.length > 0) {
                 slackbot.notify(recovered, 'Real-Time')
                 console.log(recovered)
             }
