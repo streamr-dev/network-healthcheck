@@ -92,7 +92,7 @@ async function run() {
                         previouslyFailed[ws] = subscribersHealth[ws]
                     }
                 } else if (ws in previouslyFailed) {
-                    recovered.push(`Broker at ${ws} recovered at counter ${counter}, in total ${counter - previouslyFailed} health checks dropped, estimated downtime: ${(counter - previouslyFailed) * (publishInterval / 1000)} seconds`)
+                    recovered.push(`Broker at ${ws} recovered at counter ${counter}, in total ${counter - previouslyFailed[ws]} health checks dropped, estimated downtime: ${(counter - previouslyFailed[ws]) * (publishInterval / 1000)} seconds`)
                     delete previouslyFailed[ws]
                 }
             })
