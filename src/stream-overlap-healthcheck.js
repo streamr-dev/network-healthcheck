@@ -7,21 +7,15 @@ const { version: CURRENT_VERSION } = require('../package.json')
 program
     .version(CURRENT_VERSION)
     .option('--queryTimeout <queryTimeout>', 'timeout for queries in milliseconds', '10000')
-    .option('--queryInterval <queryInterval>', 'interval for queries in milliseconds', '60000')
+    .option('--queryInterval <queryInterval>', 'interval for queries in milliseconds', '120000')
     .option('--slackChannel <slackChannel>', 'Slack channel for notifications', '#network-log')
     .option('--urls <urls>', 'URLs to query as a string split with ,', (value) => value.split(','), [
-        'https://corea1.streamr.network:8001',
-        'https://corea1.streamr.network:8002',
-        'https://corea1.streamr.network:8003',
-        'https://corea1.streamr.network:8004',
-        'https://corea2.streamr.network:8001',
-        'https://corea2.streamr.network:8002',
-        'https://corea2.streamr.network:8003',
-        'https://corea2.streamr.network:8004'
+        'https://corea1.streamr.network:30300',
+        'https://corea2.streamr.network:30300',
     ])
-    .option('--apiEndpoint <apiEndpoint>', 'endpoint for API', '/api/v1/streams/7wa7APtlTq6EC5iTCBy6dw/data/partitions/0/last')
+    .option('--apiEndpoint <apiEndpoint>', 'endpoint for API', '/topology/')
     .option('--slackBotToken <slackBotToken>', 'OAuth token for slack app', '')
-    .option('--name <name>', 'name for the health checker', 'Resend')
+    .option('--name <name>', 'name for the health checker', 'Tracker Stream Overlap')
     .description('Run run resend health check')
     .parse(process.argv)
 
@@ -42,13 +36,13 @@ function parseResponseForFailures(res) {
             error: `Query to ${res.reason.config.url} failed, request timed out after ${queryTimeout}ms`,
             url: res.reason.config.url
         }
-    } else if (res.value.status !== 200 || res.value.data.length === 0) {
+    } else if (res.value.status !== 200) {
         return {
             error: `Query to ${res.value.config.url} failed with status ${res.value.status}`,
             url: res.value.config.url
         }
     }
-     return {
+    return {
         error: null,
         url: res.value.config.url
     }
@@ -65,6 +59,7 @@ setInterval(async () => {
     const responses = await Promise.allSettled(requestPromises)
     const failedQueryAlerts = []
     const backUp = []
+    const data = []
     responses.forEach((res) => {
         const { url, error } = parseResponseForFailures(res)
         if (error) {
@@ -77,11 +72,19 @@ setInterval(async () => {
                 delete previouslyFailed[url]
                 backUp.push(`${url} back up`)
             }
+            data.push(Object.keys(res.value.data))
         }
     })
+    // Find intersection for stream-ids in tracker topologies
+    const intersection = data.reduce((a, b) => a.filter(c => b.includes(c)))
+
     if (failedQueryAlerts.length > 0) {
         slackbot.alert(failedQueryAlerts, name)
         console.log(failedQueryAlerts)
+    } else if (intersection.length > 0) {
+        const message = `Overlapping streams on multiple trackers trackers for stream-ids: ${intersection}`
+        slackbot.alert([message], name)
+        console.log(message)
     } else if (Object.keys(previouslyFailed).length === 0) {
         console.log('Health check successful')
     }

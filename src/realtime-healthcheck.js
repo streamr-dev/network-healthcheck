@@ -12,7 +12,8 @@ program
     .option('--publishInterval <publishInterval>', 'interval for queries in milliseconds', '10000')
     .option('--slackChannel <slackChannel>', 'Slack channel for notifications', '#network-log')
     .option('--streamId <streamId>', 'Stream id', 'realtime-network-healthcheck')
-    .option('--urls <urls>', 'Broker WS urls as string split with ,', (value) => value.split(','), [
+    .option('--publisherUrl <publisherUrl>', 'Broker WS url for publisher', 'wss://streamr.network')
+    .option('--subscriberUrls <subscriberUrls>', 'Broker WS subscriber urls as string split with ,', (value) => value.split(','), [
         'wss://corea1.streamr.network:7001',
         'wss://corea1.streamr.network:7002',
         'wss://corea1.streamr.network:7003',
@@ -24,6 +25,7 @@ program
     ])
     .option('--wsEndpoint <wsEndpoint>', 'broker WS endpoint', '/api/v1/ws')
     .option('--slackBotToken <slackBotToken>', 'OAuth token for slack app', '')
+    .option('--name <name>', 'name for the health checker', 'Real-Time')
     .description('Run run resend health check')
     .parse(process.argv)
 
@@ -33,19 +35,16 @@ if (!program.opts().slackBotToken) {
     process.exit(1)
 }
 
-const { slackBotToken } = program.opts()
-const { wsEndpoint } = program.opts()
-const { urls } = program.opts()
-const { streamId } = program.opts()
+const { slackBotToken, wsEndpoint, publisherUrl, subscriberUrls, streamId, slackChannel, name } = program.opts()
 const subscribeWait = parseInt(program.opts().subscribeWait, 10)
 const publishInterval = parseInt(program.opts().publishInterval, 10)
-const { slackChannel } = program.opts()
 const slackbot = new SlackBot(slackChannel, slackBotToken)
 const EthKey = process.env.ETHEREUM_PRIVATE_KEY || StreamrClient.generateEthereumAccount().privateKey
 
 async function run() {
 
     const publisher = new StreamrClient({
+       url: publisherUrl + wsEndpoint,
        auth: {
            privateKey: EthKey
        }
@@ -57,7 +56,7 @@ async function run() {
     })
     console.log('Using stream with id ' + stream.id)
 
-    urls.forEach((ws) => {
+    subscriberUrls.forEach((ws) => {
         subscribersHealth[ws] = 0
 
         const subscriber = new StreamrClient({
@@ -97,20 +96,20 @@ async function run() {
                 }
             })
             if (failed.length > 0) {
-                slackbot.alert(failed, 'Real-Time')
+                slackbot.alert(failed, name)
                 console.log(failed)
             } else if (Object.keys(previouslyFailed).length === 0) {
                 console.log('All healthchecks successful')
             }
             if (recovered.length > 0) {
-                slackbot.notify(recovered, 'Real-Time')
+                slackbot.notify(recovered, name)
                 console.log(recovered)
             }
             counter += 1
         }, subscribeWait)
     }, publishInterval)
-    slackbot.notify([`Real-Time healthcheck started with streamId ${stream.id}, publish interval ${publishInterval / 1000} seconds, propagation wait ${subscribeWait / 1000} seconds`], 'Real-Time')
-    console.log('Resend healthcheck started')
+    slackbot.notify([`${name} healthcheck started with streamId ${stream.id}, publish interval ${publishInterval / 1000} seconds, propagation wait ${subscribeWait / 1000} seconds`], name)
+    console.log(name + ' healthcheck started')
 }
 
 run()
