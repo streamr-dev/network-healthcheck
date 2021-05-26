@@ -11,7 +11,7 @@ program
     .option('--slackChannel <slackChannel>', 'Slack channel for notifications', '#network-log')
     .option('--urls <urls>', 'URLs to query as a string split with ,', (value) => value.split(','), [
         'https://corea1.streamr.network:8001',
-        'https://corea1.streamr.network:8002',
+        // 'https://corea1.streamr.network:8002',
         // 'https://corea1.streamr.network:8003',
         // 'https://corea1.streamr.network:8004',
         // 'https://corea2.streamr.network:8001',
