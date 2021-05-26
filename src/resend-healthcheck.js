@@ -8,16 +8,16 @@ program
     .version(CURRENT_VERSION)
     .option('--queryTimeout <queryTimeout>', 'timeout for queries in milliseconds', '10000')
     .option('--queryInterval <queryInterval>', 'interval for queries in milliseconds', '60000')
-    .option('--slackChannel <slackChannel>', 'Slack channel for notifications', '#network-log')
+    .option('--slackChannel <slackChannel>', 'Slack channel for notifications', 'UHD7R1QES')
     .option('--urls <urls>', 'URLs to query as a string split with ,', (value) => value.split(','), [
         'https://corea1.streamr.network:8001',
         'https://corea1.streamr.network:8002',
-        'https://corea1.streamr.network:8003',
-        'https://corea1.streamr.network:8004',
-        'https://corea2.streamr.network:8001',
-        'https://corea2.streamr.network:8002',
-        'https://corea2.streamr.network:8003',
-        'https://corea2.streamr.network:8004'
+        // 'https://corea1.streamr.network:8003',
+        // 'https://corea1.streamr.network:8004',
+        // 'https://corea2.streamr.network:8001',
+        // 'https://corea2.streamr.network:8002',
+        // 'https://corea2.streamr.network:8003',
+        // 'https://corea2.streamr.network:8004'
     ])
     .option('--apiEndpoint <apiEndpoint>', 'endpoint for API', '/api/v1/streams/7wa7APtlTq6EC5iTCBy6dw/data/partitions/0/last')
     .option('--slackBotToken <slackBotToken>', 'OAuth token for slack app', '')
@@ -42,13 +42,18 @@ function parseResponseForFailures(res) {
             error: `Query to ${res.reason.config.url} failed, request timed out after ${queryTimeout}ms`,
             url: res.reason.config.url
         }
-    } else if (res.value.status !== 200 || res.value.data.length === 0) {
+    } else if (res.value.status !== 200) {
         return {
             error: `Query to ${res.value.config.url} failed with status ${res.value.status}`,
             url: res.value.config.url
         }
+    } else if (res.value.data.length === 0) {
+        return {
+            error: `Query to ${res.value.config.url} failed with status ${res.value.status}, responded with was an empty list`,
+            url: res.value.config.url
+        }
     }
-     return {
+    return {
         error: null,
         url: res.value.config.url
     }
