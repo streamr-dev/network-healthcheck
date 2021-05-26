@@ -8,7 +8,7 @@ program
     .version(CURRENT_VERSION)
     .option('--queryTimeout <queryTimeout>', 'timeout for queries in milliseconds', '10000')
     .option('--queryInterval <queryInterval>', 'interval for queries in milliseconds', '60000')
-    .option('--slackChannel <slackChannel>', 'Slack channel for notifications', 'UHD7R1QES')
+    .option('--slackChannel <slackChannel>', 'Slack channel for notifications', '#network-log')
     .option('--urls <urls>', 'URLs to query as a string split with ,', (value) => value.split(','), [
         'https://corea1.streamr.network:8001',
         'https://corea1.streamr.network:8002',
