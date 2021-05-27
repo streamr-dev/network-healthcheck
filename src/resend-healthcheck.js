@@ -49,7 +49,7 @@ function parseResponseForFailures(res) {
         }
     } else if (res.value.data.length === 0) {
         return {
-            error: `Query to ${res.value.config.url} failed with status ${res.value.status}, responded with was an empty list`,
+            error: `Query to ${res.value.config.url} failed with status ${res.value.status}, responded with an empty list`,
             url: res.value.config.url
         }
     }
