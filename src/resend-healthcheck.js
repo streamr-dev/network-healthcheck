@@ -1,5 +1,5 @@
 const axios = require('axios')
-const { SlackBot } = require('./slackbot.js')
+const { SlackBot } = require('@streamr/slackbot')
 const program = require('commander')
 
 const { version: CURRENT_VERSION } = require('../package.json')
