@@ -1,9 +1,9 @@
 const axios = require('axios')
 const { SlackBot } = require('@streamr/slackbot')
 const program = require('commander')
+const { parseResponseForFailures } = require('./helpers')
 
 const { version: CURRENT_VERSION } = require('../package.json')
-
 program
     .version(CURRENT_VERSION)
     .option('--queryTimeout <queryTimeout>', 'timeout for queries in milliseconds', '10000')
@@ -30,24 +30,6 @@ const queryInterval = parseInt(program.opts().queryInterval, 10)
 const slackbot = new SlackBot(slackChannel, slackBotToken)
 const previouslyFailed = {}
 
-function parseResponseForFailures(res) {
-    if (res.status === 'rejected') {
-        return {
-            error: `Query to ${res.reason.config.url} failed, request timed out after ${queryTimeout}ms`,
-            url: res.reason.config.url
-        }
-    } else if (res.value.status !== 200 || res.value.data === {}) {
-        return {
-            error: `Query to ${res.value.config.url} failed with status ${res.value.status}`,
-            url: res.value.config.url
-        }
-    }
-    return {
-        error: null,
-        url: res.value.config.url
-    }
-}
-
 function checkPreviouslyFailed(url) {
     return url in previouslyFailed
 }
@@ -61,7 +43,7 @@ setInterval(async () => {
     const backUp = []
     const data = []
     responses.forEach((res) => {
-        const { url, error } = parseResponseForFailures(res)
+        const { url, error } = parseResponseForFailures(res, queryTimeout)
         if (error) {
             if (!checkPreviouslyFailed(url)) {
                 failedQueryAlerts.push(error)
