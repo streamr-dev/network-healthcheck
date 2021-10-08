@@ -30,6 +30,7 @@ const slackbot = new SlackBot(slackChannel, slackBotToken)
 setInterval(async () => {
     try {
         await axios.get(url + endpoint, { timeout: queryTimeout })
+        console.log("Healthcheck successful")
     } catch (err) {
         console.error(err)
         slackbot.alert([err], name)
