@@ -6,7 +6,7 @@ const { version: CURRENT_VERSION } = require('../package.json')
 
 program
     .version(CURRENT_VERSION)
-    .option('--queryTimeout <queryTimeout>', 'timeout for queries in milliseconds', '20000')
+    .option('--queryTimeout <queryTimeout>', 'timeout for queries in milliseconds', '10000')
     .option('--queryInterval <queryInterval>', 'interval for queries in milliseconds', '180000')
     .option('--slackChannel <slackChannel>', 'Slack channel for notifications', '#testnet-log')
     .option('--url <url>', 'URL to query as a string split with', 'http://localhost:3011')
