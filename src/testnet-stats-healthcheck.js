@@ -31,7 +31,6 @@ const slackbot = new SlackBot(slackChannel, slackBotToken)
 
 setInterval(async () => {
     const requestPromises = apiEndpoints.map(async (endpoint) => {
-        console.log(url + endpoint)
         return await axios.get(url + endpoint, { timeout: queryTimeout })
     })
     const errors = []
