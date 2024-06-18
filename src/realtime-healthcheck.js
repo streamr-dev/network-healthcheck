@@ -1,7 +1,7 @@
 const axios = require('axios')
 const { SlackBot } = require('@streamr/slackbot')
 const program = require('commander')
-const StreamrClient = require('streamr-client')
+const StreamrClient = require('@streamr/sdk')
 require('dotenv').config()
 
 const { version: CURRENT_VERSION } = require('../package.json')
